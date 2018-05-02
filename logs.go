@@ -20,6 +20,7 @@ import (
 	"log"
 	"log/syslog"
 	"os"
+	"sync/atomic"
 )
 
 // Debug is the log file for debug logging. It is disabled by default. These
@@ -53,7 +54,7 @@ const (
 	ErrorLevel
 )
 
-var currentLevel uint
+var currentLevel uint32
 
 const syslogFlags = log.Lshortfile
 const stderrFlags = log.Ldate + log.Ltime + log.Lshortfile
@@ -65,7 +66,8 @@ func init() {
 
 // SetLogLevel sets the logging level
 func SetLogLevel(level uint) {
-	currentLevel = level
+	atomic.StoreUint32(&currentLevel, uint32(level))
+	//	currentLevel = level
 }
 
 func setFlags(flags int) {
@@ -111,7 +113,7 @@ func EnableSyslog() {
 	info.SetPrefix("")
 	warning.SetPrefix("")
 	errlog.SetPrefix("")
-	SetLogLevel(currentLevel)
+	SetLogLevel(uint(currentLevel))
 }
 
 // ANSI escape codes for colored log lines. This will only show up on the stderr
@@ -151,13 +153,14 @@ func EnableStderr(plainText bool) {
 		errlog.SetPrefix(errorText + "🛑   ")
 	}
 
-	SetLogLevel(currentLevel)
+	SetLogLevel(uint(currentLevel))
 }
 
 // Debug adds a debug-level log message to the log. If the log level is set
 // higher than DebugLevel the message will be discarded.
 func Debug(format string, v ...interface{}) {
-	if currentLevel == DebugLevel {
+	level := atomic.LoadUint32(&currentLevel)
+	if uint(level) == DebugLevel {
 
 		debug.Output(2, fmt.Sprintf(format, v...))
 	}
@@ -166,7 +169,8 @@ func Debug(format string, v ...interface{}) {
 // Info adds an info-level log message to the log if the log level is set
 // to InfoLevel or lower.
 func Info(format string, v ...interface{}) {
-	if currentLevel <= InfoLevel {
+	level := atomic.LoadUint32(&currentLevel)
+	if uint(level) <= InfoLevel {
 		info.Output(2, fmt.Sprintf(format, v...))
 	}
 }
@@ -174,7 +178,8 @@ func Info(format string, v ...interface{}) {
 // Warning adds a warning-level log message if the log level is set to
 // WarningLevel or lower.
 func Warning(format string, v ...interface{}) {
-	if currentLevel <= WarningLevel {
+	level := atomic.LoadUint32(&currentLevel)
+	if uint(level) <= WarningLevel {
 		warning.Output(2, fmt.Sprintf(format, v...))
 	}
 }
