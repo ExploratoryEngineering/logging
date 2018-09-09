@@ -124,6 +124,7 @@ const (
 	infoText    = "\x1b[34;1m" // Bright blue
 	warningText = "\x1b[33;1m" // Bright yellow
 	errorText   = "\x1b[31;1m" // Bright red
+	resetText   = "\x1b[0m"    // Reset
 )
 
 // EnableStderr enables logging to stderr
@@ -187,4 +188,9 @@ func Warning(format string, v ...interface{}) {
 // Error adds an error-level log message to the log.
 func Error(format string, v ...interface{}) {
 	errlog.Output(2, fmt.Sprintf(format, v...))
+}
+
+// ResetColors prints the ANSI color reset code
+func ResetColors() {
+	fmt.Print(resetText)
 }
