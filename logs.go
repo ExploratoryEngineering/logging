@@ -109,6 +109,7 @@ func EnableSyslog() {
 	setFlags(syslogFlags)
 
 	// Set text prefixes since that makes it easier to search the syslog
+	log.SetPrefix("")
 	debug.SetPrefix("")
 	info.SetPrefix("")
 	warning.SetPrefix("")
@@ -141,6 +142,7 @@ func EnableStderr(plainText bool) {
 
 	if plainText {
 		// Use plain text logging
+		log.SetPrefix("LOG     ")
 		debug.SetPrefix("DEBUG   ")
 		info.SetPrefix("INFO    ")
 		warning.SetPrefix("WARNING ")
