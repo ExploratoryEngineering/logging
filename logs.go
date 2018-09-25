@@ -77,25 +77,23 @@ func setFlags(flags int) {
 	warning.SetFlags(flags)
 	errlog.SetFlags(flags)
 }
-
-// EnableSyslog enables syslog logging.
-func EnableSyslog() {
-	errorLog, err := syslog.New(syslog.LOG_ERR|syslog.LOG_DAEMON, "congress")
+func EnableNamedSyslog(name string) {
+	errorLog, err := syslog.New(syslog.LOG_ERR|syslog.LOG_DAEMON, name)
 	if err != nil {
 		errlog.Printf("Unable to set up error syslog: %v", err)
 		return
 	}
-	warningLog, err := syslog.New(syslog.LOG_WARNING|syslog.LOG_DAEMON, "congress")
+	warningLog, err := syslog.New(syslog.LOG_WARNING|syslog.LOG_DAEMON, name)
 	if err != nil {
 		errlog.Printf("Unable to set up warning syslog: %v", err)
 		return
 	}
-	infoLog, err := syslog.New(syslog.LOG_INFO|syslog.LOG_DAEMON, "congress")
+	infoLog, err := syslog.New(syslog.LOG_INFO|syslog.LOG_DAEMON, name)
 	if err != nil {
 		errlog.Printf("Unable to set up info syslog: %v", err)
 		return
 	}
-	debugLog, err := syslog.New(syslog.LOG_DEBUG|syslog.LOG_DAEMON, "congress")
+	debugLog, err := syslog.New(syslog.LOG_DEBUG|syslog.LOG_DAEMON, name)
 	if err != nil {
 		errlog.Printf("Unable to set up debug syslog: %v", err)
 		return
@@ -115,6 +113,11 @@ func EnableSyslog() {
 	warning.SetPrefix("")
 	errlog.SetPrefix("")
 	SetLogLevel(uint(currentLevel))
+}
+
+// EnableSyslog enables syslog logging with the name "congress"
+func EnableSyslog() {
+	EnableNamedSyslog("congress")
 }
 
 // ANSI escape codes for colored log lines. This will only show up on the stderr

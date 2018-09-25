@@ -46,7 +46,7 @@ func TestStderrLogging(t *testing.T) {
 }
 
 func TestSyslogLogging(t *testing.T) {
-	EnableSyslog()
+	EnableNamedSyslog("logging-test")
 
 	for i, v := range levels {
 		SetLogLevel(v)
