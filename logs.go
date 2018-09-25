@@ -77,6 +77,8 @@ func setFlags(flags int) {
 	warning.SetFlags(flags)
 	errlog.SetFlags(flags)
 }
+
+// EnableNamedSyslog enables sending logs to syslog with the given name.
 func EnableNamedSyslog(name string) {
 	errorLog, err := syslog.New(syslog.LOG_ERR|syslog.LOG_DAEMON, name)
 	if err != nil {
