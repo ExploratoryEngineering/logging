@@ -122,6 +122,21 @@ func EnableSyslog() {
 	EnableNamedSyslog("congress")
 }
 
+// EnableMemoryLogger turns on logging to a memory logger
+func EnableMemoryLogger(d, i, e, w *MemoryLogger) {
+	log.SetOutput(d)
+	debug.SetOutput(d)
+	info.SetOutput(i)
+	warning.SetOutput(w)
+	errlog.SetOutput(e)
+	setFlags(MemoryLoggerFlags)
+	log.SetPrefix("")
+	debug.SetPrefix("")
+	info.SetPrefix("")
+	warning.SetPrefix("")
+	errlog.SetPrefix("")
+}
+
 // ANSI escape codes for colored log lines. This will only show up on the stderr
 // logs. Printf statements on stdout will be broken but we don't do printf's do
 // we?

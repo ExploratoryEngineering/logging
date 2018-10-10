@@ -56,3 +56,19 @@ func TestSyslogLogging(t *testing.T) {
 		Error("This is error level (round %d)", i)
 	}
 }
+
+func TestMemoryLoggging(t *testing.T) {
+	d := NewMemoryLogger(10)
+	i := NewMemoryLogger(10)
+	w := NewMemoryLogger(10)
+	e := NewMemoryLogger(10)
+	EnableMemoryLogger(d, i, w, e)
+
+	for i, v := range levels {
+		SetLogLevel(v)
+		Debug("This is debug level (round %d)", i)
+		Info("This is info level (round %d)", i)
+		Warning("This is warning level (round %d)", i)
+		Error("This is error level (round %d)", i)
+	}
+}
