@@ -171,6 +171,9 @@ func (t *TerminalLogger) drawLogs(w, h int) {
 				fg = termbox.ColorRed | termbox.AttrBold
 			}
 			pad := w - len(msg)
+			if pad < 0 {
+				pad = 0
+			}
 			t.drawString(0, i, w, msg+strings.Repeat(" ", pad), fg, bg)
 			index--
 		}
