@@ -122,13 +122,17 @@ func EnableSyslog() {
 	EnableNamedSyslog("congress")
 }
 
-// EnableMemoryLogger turns on logging to a memory logger
-func EnableMemoryLogger(d, i, e, w *MemoryLogger) {
-	log.SetOutput(d)
-	debug.SetOutput(d)
-	info.SetOutput(i)
-	warning.SetOutput(w)
-	errlog.SetOutput(e)
+// EnableMemoryLogger turns on logging to a memory logger.
+func EnableMemoryLogger(logs []*MemoryLogger) {
+	if len(logs) < int(ErrorLevel) {
+		fmt.Fprintf(os.Stderr, "Expected %d logs for memory log, got %d", ErrorLevel, len(logs))
+		return
+	}
+	log.SetOutput(logs[DebugLevel])
+	debug.SetOutput(logs[DebugLevel])
+	info.SetOutput(logs[InfoLevel])
+	warning.SetOutput(logs[WarningLevel])
+	errlog.SetOutput(logs[ErrorLevel])
 	setFlags(MemoryLoggerFlags)
 	log.SetPrefix("")
 	debug.SetPrefix("")

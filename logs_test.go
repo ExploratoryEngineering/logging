@@ -58,11 +58,8 @@ func TestSyslogLogging(t *testing.T) {
 }
 
 func TestMemoryLoggging(t *testing.T) {
-	d := NewMemoryLogger(10)
-	i := NewMemoryLogger(10)
-	w := NewMemoryLogger(10)
-	e := NewMemoryLogger(10)
-	EnableMemoryLogger(d, i, w, e)
+	logs := NewMemoryLoggers(10)
+	EnableMemoryLogger(logs)
 
 	for i, v := range levels {
 		SetLogLevel(v)
