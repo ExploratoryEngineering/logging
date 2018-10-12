@@ -186,16 +186,12 @@ func (t *TerminalLogger) drawLogs(w, h int) {
 			bg := termbox.ColorBlack
 			switch elems[index].Level {
 			case DebugLevel:
-				bg = termbox.ColorBlack
 				fg = termbox.ColorWhite
 			case InfoLevel:
-				bg = termbox.ColorBlack
 				fg = termbox.ColorBlue | termbox.AttrBold
 			case WarningLevel:
-				bg = termbox.ColorBlack
 				fg = termbox.ColorYellow | termbox.AttrBold
 			case ErrorLevel:
-				bg = termbox.ColorBlack
 				fg = termbox.ColorRed | termbox.AttrBold
 			}
 			blankPrefix := strings.Repeat(" ", prefixLen+1)
