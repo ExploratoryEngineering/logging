@@ -29,6 +29,24 @@ type TerminalLogger struct {
 	mutex   sync.Mutex
 }
 
+// Split and pad lines with spaces to get an array of strings
+// with length set to maxLen.
+func splitAndPadLines(msg string, maxLen int) []string {
+	l := len(msg)
+	padding := maxLen - (l % maxLen)
+	if l != 0 && (l%maxLen) == 0 {
+		padding = 0
+	}
+	lines := (l + padding) / maxLen
+	ret := make([]string, lines)
+	msg = msg + strings.Repeat(" ", padding)
+	for i := range ret {
+		ret[i] = msg[:maxLen]
+		msg = msg[maxLen:]
+	}
+	return ret
+}
+
 // Start launches the logging screen. If there's an error launching the screen
 // it will be returned. The method doesn't return until the user presses the
 // escape key.
@@ -64,8 +82,16 @@ func (t *TerminalLogger) Start() error {
 	}()
 	for {
 		ev := termbox.PollEvent()
+		if ev.Type == termbox.EventInterrupt {
+			quit <- true
+			return nil
+		}
 		if ev.Type == termbox.EventKey {
 			switch ev.Key {
+			case termbox.KeyCtrlC:
+				fallthrough
+			case termbox.KeyCtrlX:
+				fallthrough
 			case termbox.KeyEsc:
 				quit <- true
 				return nil
@@ -153,7 +179,9 @@ func (t *TerminalLogger) drawLogs(w, h int) {
 	index := len(elems) - 1
 	for i := h - 2; i > 0; i-- {
 		if index > -1 {
-			msg := fmt.Sprintf("%8s  %-15s  %s", elems[index].Time.Format("15:04:05"), elems[index].Location, elems[index].Message)
+			prefix := fmt.Sprintf("%8s  %-20s ", elems[index].Time.Format("15:04:05"), elems[index].Location)
+			prefixLen := len(prefix)
+			lines := splitAndPadLines(elems[index].Message, w-prefixLen)
 			fg := termbox.ColorWhite
 			bg := termbox.ColorBlack
 			switch elems[index].Level {
@@ -170,11 +198,12 @@ func (t *TerminalLogger) drawLogs(w, h int) {
 				bg = termbox.ColorBlack
 				fg = termbox.ColorRed | termbox.AttrBold
 			}
-			pad := w - len(msg)
-			if pad < 0 {
-				pad = 0
+			blankPrefix := strings.Repeat(" ", prefixLen+1)
+			for n := len(lines) - 1; n > 0; n-- {
+				t.drawString(0, i, w, blankPrefix+lines[n], fg, bg)
+				i--
 			}
-			t.drawString(0, i, w, msg+strings.Repeat(" ", pad), fg, bg)
+			t.drawString(0, i, w, prefix+lines[0], fg, bg)
 			index--
 		}
 	}
