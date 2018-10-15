@@ -54,6 +54,7 @@ func (t *TerminalLogger) Start() error {
 	if err := termbox.Init(); err != nil {
 		return err
 	}
+	termbox.HideCursor()
 	defer termbox.Close()
 
 	t.draw()
@@ -183,7 +184,7 @@ func (t *TerminalLogger) drawLogs(w, h int) {
 			prefixLen := len(prefix)
 			lines := splitAndPadLines(elems[index].Message, w-prefixLen)
 			fg := termbox.ColorWhite
-			bg := termbox.ColorBlack
+			bg := termbox.ColorDefault
 			switch elems[index].Level {
 			case DebugLevel:
 				fg = termbox.ColorWhite
