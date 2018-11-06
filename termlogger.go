@@ -2,6 +2,8 @@ package logging
 
 import (
 	"fmt"
+	"os"
+	"runtime/trace"
 	"strings"
 	"sync"
 	"time"
@@ -23,10 +25,11 @@ func NewTerminalLogger(logs []*MemoryLogger) *TerminalLogger {
 // TerminalLogger is a logger that creates a console logging screen with logs
 // that can be toggled runtime.
 type TerminalLogger struct {
-	logs    []*MemoryLogger
-	enabled []bool
-	appName string
-	mutex   sync.Mutex
+	logs      []*MemoryLogger
+	enabled   []bool
+	appName   string
+	mutex     sync.Mutex
+	traceFile *os.File
 }
 
 // Split and pad lines with spaces to get an array of strings
@@ -104,6 +107,8 @@ func (t *TerminalLogger) Start() error {
 				t.toggle(WarningLevel)
 			case termbox.KeyCtrlE:
 				t.toggle(ErrorLevel)
+			case termbox.KeyCtrlT:
+				t.toggleTrace()
 			}
 		}
 		t.draw()
@@ -151,7 +156,7 @@ func (t *TerminalLogger) drawIndicator(w, h, pos int, name string, enabled bool,
 
 // Draw the status bar
 func (t *TerminalLogger) drawStatusBar(w, h int) {
-	helpStr := fmt.Sprintf("Ctrl+D, I, W, E: Toggle levels (E:%d/W:%d/I:%d/D:%d)",
+	helpStr := fmt.Sprintf("Ctrl+D, I, W, E: Toggle levels (E:%d/W:%d/I:%d/D:%d), Ctrl+T: Toggle trace",
 		t.logs[ErrorLevel].NumEntries(),
 		t.logs[WarningLevel].NumEntries(),
 		t.logs[InfoLevel].NumEntries(),
@@ -163,6 +168,7 @@ func (t *TerminalLogger) drawStatusBar(w, h int) {
 	t.drawIndicator(w, h, 2, "W", t.enabled[WarningLevel], termbox.ColorBlack, termbox.ColorYellow)
 	t.drawIndicator(w, h, 3, "I", t.enabled[InfoLevel], termbox.ColorBlack, termbox.ColorCyan)
 	t.drawIndicator(w, h, 4, "D", t.enabled[DebugLevel], termbox.ColorBlack, termbox.ColorWhite)
+	t.drawIndicator(w, h, 5, "T", t.traceFile != nil, termbox.ColorYellow, termbox.ColorRed)
 }
 
 // Draw the log entries
@@ -217,4 +223,28 @@ func (t *TerminalLogger) draw() {
 	t.drawLogs(w, h)
 	termbox.Flush()
 	t.mutex.Unlock()
+}
+
+func (t *TerminalLogger) toggleTrace() {
+	if t.traceFile != nil {
+		trace.Stop()
+		t.traceFile.Close()
+		t.traceFile = nil
+		Info("Trace is completed")
+		return
+	}
+
+	traceFileName := time.Now().Format("trace_2006-01-02T150405.trace")
+	var err error
+	t.traceFile, err = os.Create(traceFileName)
+	if err != nil {
+		Error("Unable to create trace file '%s': %v", traceFileName, err)
+		return
+	}
+	Info("Trace started. Trace file name is %s", traceFileName)
+	if err := trace.Start(t.traceFile); err != nil {
+		Error("Unable to start the trace: %v", err)
+		t.traceFile.Close()
+		return
+	}
 }
